@@ -6,7 +6,7 @@ playerOne = True # always start with player one
 messageCode = 0
 message = ""
 
-def In(s):
+def Board(s):
     print (".---------------------------.")
     print ("|   |%3d|%3d|%3d|%3d|%3d|   |" %(s[1],s[2],s[3],s[4],s[5]))
     print ("|%3d|-------------------|%3d|" %(s[0],s[6]))
@@ -31,7 +31,7 @@ while playing:
     if not playerOne:
         print("       a   b   c   d   e")
 
-    In(s)
+    Board(s)
 
     if playerOne: 
         print("       a   b   c   d   e")
@@ -94,31 +94,26 @@ while playing:
             s[chosenOo] = 0 # clear the square into 0
             currentOo = chosenOo
 
-            print("Initial board:")
-            In(s)
-
             # # Stone distribution loop
             while True:
                 while giveawayS > 0:
                     currentOo += 1
-                    if currentOo > 11
-                    currentOo = 0
+                    if currentOo > 11:
+                        currentOo = 0
 
+                    s[currentOo] += 1
+                    giveawayS -= 1
 
+                print("\nBoard show:") # board phasw 1
+                Board(s)
 
+                if s[currentOo] == 1:
+                    print("\nLand on %d. Turn ends." % currentOo)
+                    break
 
-            recipient = chosenOo + 1
-            while giveawayS > 0:
-                if playerOne and recipient == 11:
-                    recipient = 0
-                if not playerOne and recipient == 5:
-                    recipient = 6
-
-        s[recipient] = s[recipient] + 1
-        giveawayS = giveawayS - 1
-        recipient = recipient + 1
-        if recipient > 11:
-            recipient = 0
+                print("\n Land on %d and has %d stone(s). Continue turn." % (currentOo, s[currentOo]))
+                giveawayS = s[currentOo]
+                s[currentOo] = 0
 
     # end and switch turn    
     playerOne = not playerOne
