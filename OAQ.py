@@ -23,8 +23,7 @@ while playing:
         message = "That square is empty, Player One." if playerOne else "That square is empty, Player Two."
     # elif messageCode == 2:
     #     message = "Thanks for playing"
-    print()
-    print(message)
+    print("\n" + message)
 
 # Show the game board 
     # print(" ")
@@ -89,35 +88,47 @@ while playing:
         if s[chosenOo] == 0:
             print()
             messageCode = -1 # empty pit
-        else:
-            giveawayS = s[chosenOo]
-            s[chosenOo] = 0 # clear the square into 0
-            currentOo = chosenOo
+            continue # avoid switch turn
 
-            # # Stone distribution loop
-            while True:
-                while giveawayS > 0:
-                    currentOo += 1
-                    if currentOo > 11:
-                        currentOo = 0
+        giveawayS = s[chosenOo]
+        s[chosenOo] = 0 # clear the square into 0
+        currentOo = chosenOo
 
-                    s[currentOo] += 1
-                    giveawayS -= 1
+        # # Stone distribution loop
+        while True:
+            while giveawayS > 0:
+                currentOo += 1
+                if currentOo > 11:
+                    currentOo = 0
+                s[currentOo] += 1
+                giveawayS -= 1
 
-                print("\nBoard show:") # board phasw 1
-                Board(s)
+            print("\nBoard show:") # board phase 1
+            Board(s)
 
-                if s[currentOo] == 1:
-                    print("\nLand on %d. Turn ends." % currentOo)
-                    break
+            nextOo = (currentOo + 1) % len(s)
+            nextofnextOo = (nextOo +1) % len(s)
+            if s[nextOo] == 0:
+                print("\nLand on %d. Turn ends." % currentOo)
+                break
 
-                print("\n Land on %d and has %d stone(s). Continue turn." % (currentOo, s[currentOo]))
-                giveawayS = s[currentOo]
-                s[currentOo] = 0
+            print("\n Next is %d and has %d stone(s). Continue turn." % (nextOo, s[nextOo])) # prob here
+
+            userInput = input("\nPress Enter to show next phase ...") #.lower()
+
+                # if userInput == "q":
+                #     # messageCode = 2
+                #     playing = False 
+                #     continue
+                
+            giveawayS = s[nextOo]
+            s[nextOo] = 0
+            currentOo = nextOo
 
     # end and switch turn    
-    playerOne = not playerOne
+        playerOne = not playerOne
+        messageCode = 0
 
-else:
-    print()
-    messageCode = -2 # invalid input
+    else:
+        print()
+        messageCode = -2 # invalid input
