@@ -3,7 +3,7 @@
 /*
 GAME RULE
 	 _____________________________
-	[	 |	 |   |   |   |   |    ]
+	[    |   |   |   |   |   |    ]
 	[    | 5 | 5 | 5 | 5 | 5 |    ] 
 	[ 10 |===================| 10 ]
 	[    | 5 | 5 | 5 | 5 | 5 |    ] 
@@ -21,7 +21,7 @@ int valuePerStone[12] = {1, 1, 1, 1, 1, 10,
 int score[2] = {0, 0}; 	// Player 1: score[0], Player 2: score[1]
 
 void printBoard(int board[12], int score[2]) {
-	cout << "\t     |  1 |  2 |  3 |  4 |  5 |     \n";
+	cout << "\t     | 10 |  9 |  8 |  7 |  6 |     \n";
     cout << "\t __________________________________\n";
 	cout << "\t[    |    |    |    |    |    |    ]\n";
 
@@ -43,7 +43,9 @@ void printBoard(int board[12], int score[2]) {
     cout << "    ]\n";
     
     cout << "\t[____|____|____|____|____|____|____]\n";
-    cout << "\t     | 10 |  9 |  8 |  7 |  6 |     \n";
+    cout << "\n";
+    cout << "\t     |  1 |  2 |  3 |  4 |  5 |     \n";
+    cout << "\n";
 
     // Show scores
     cout << "Score - Player 1: " << score[0]
@@ -57,47 +59,66 @@ int getValidMove(int player) {
 	int pit;
 	while (true) {
 		cout << "Player " << player << ", choose a pit (" 
-     		 << (player == 1 ? "0-5" : "6-11") << "): ";
+     		 << (player == 1 ? "1-5" : "6-10") << "): ";
 
 		cin >> pit;
 		
-		if (player == 1 && pit >= 0 && pit <= 5 && board[pit] > 0) 
-			return pit;
-		if (player == 2 && pit >= 6 && pit <= 11 && board[pit] > 0) 
-			return pit;
+		if (player == 1 && pit > 0 && pit <= 5 && board[pit] > 0) 
+			return pit-1;
+		if (player == 2 && pit > 6 && pit <= 11 && board[pit] > 0) 
+			return pit-1;
 			
 		cout << "Invalid pit. Try again." << endl;
 	}
 }
 
 
-void makeMove(int pit, int player) {
-    int stones = board[pit];             // number of stones to move
-    int stoneValue = valuePerStone[pit]; // value per stone
+bool makeMove(int pit, int player) {
+    int stones = board[pit];
     board[pit] = 0;
-
     int i = pit;
+
     while (stones > 0) {
         i = (i + 1) % 12;
-        board[i]++; // Drop 1 stone
+        
+        // Skip opponent's big pit
+        if ((player == 1 && i == 11) || (player == 2 && i == 5))
+        	continue;
+        	
+        board[i]++;
         stones--;
     }
+    
+    // Check if landed in your own stone
+    if ((player == 1 && i == 5) || (player == 2 && i == 11)) {
+    	return true;	// Get another turn
+	}
 
-    // Capture logic (if last stone lands in empty pit on your side)
+    // Capture rule
     bool isPlayer1 = (player == 1);
-    if (board[i] == 1 && valuePerStone[i] == 1) { // Only capture from regular pits
+    if (board[i] == 1) {
         if ((isPlayer1 && i >= 0 && i <= 4) || (!isPlayer1 && i >= 6 && i <= 10)) {
             int opposite = 11 - i;
-            if (board[opposite] > 0 && valuePerStone[opposite] == 1) {
-                int captured = (board[opposite] + board[i]) * valuePerStone[i];
-                score[player - 1] += captured;
+            if (board[opposite] > 0) {
+                // Determine score from opposite pit:
+                int stoneValue = (opposite == 5 || opposite == 11) ? 10 : 1;
+                int capturedStones = board[opposite];
+                int totalScore = (capturedStones + 1) * stoneValue; // +1 for current pit
+
+                score[player - 1] += totalScore;
+
                 board[opposite] = 0;
                 board[i] = 0;
-                cout << "Player " << player << " captures " << captured << " points!\n";
+
+                cout << "Player " << player << " captures from pit " << opposite
+                     << " for " << totalScore << " points!\n";
             }
         }
     }
+    
+    return false;	// No extra turn
 }
+
 
 int main() {
 	int currentPlayer = 1;
