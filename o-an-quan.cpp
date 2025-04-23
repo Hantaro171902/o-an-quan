@@ -3,8 +3,9 @@
 #include <numeric> // For std::accumulate if needed later
 #include <limits>
 #include <cctype>
+#include <string>
 #include <iomanip>
-
+// #include <windows.h>
 
 /*
 GAME RULE
@@ -18,6 +19,13 @@ GAME RULE
 
 using namespace std;
 
+const string RESET = "\033[0m";
+const string RED = "\033[31m";
+const string CYAN = "\033[36m";
+const string YELLOW = "\033[33m";
+const string BOLD = "\033[1m";
+const string BLINK = "\033[5m";
+
 int board[12] = {5, 5, 5, 5, 5, 1,
 				 5, 5, 5, 5, 5, 1};
 				 
@@ -27,48 +35,88 @@ int valuePerStone[12] = {1, 1, 1, 1, 1, 10,
 int score[2] = {0, 0}; 	// Player 1: score[0], Player 2: score[1]
 
 void printBoard(int board[12], int score[2]) {
-	cout << "\t     | 11  | 10  |  9  |  8  |  7  |     \n";
-    cout << "\t ________________________________________\n";
-	cout << "\t[    |     |     |     |     |     |    ]\n";
+	auto colorNumber = [](int val, bool isQuan) -> string {
+        string color = isQuan ? RED : CYAN;
+        return color + (val < 10 ? " " : "") + to_string(val) + RESET;
+    };
 
-    // Top row: index 10 to 6
+    auto calcQuanValue = [](int count) {
+        if (count == 0) return 0;
+        return 10 + (count - 1); // 10 for Quan + extra
+    };
+
+    cout << "\t    " << " +------------------------+ " << "\n";
+    cout << "\t    " << " | 11 | 10 |  9 |  8 |  7 | " << "\n";
+    cout << "\t" << "-----+----+----+----+----+----+-----" << "\n";
+
+    // Player 2 (Top row)
     cout << "\t[    |";
     for (int i = 10; i >= 6; i--) {
-        cout << "  " << board[i] << "  |";
+        cout << " " << setw(2) << colorNumber(board[i], i == 11 || i == 5) << " |";
     }
-    cout << "    ]\n";
+    cout << "\t   ]\n";
 
-    // Quan row: pits 11 and 5 (both should be shown as value 10)
-//    cout << "\t[ " << board[11] * valuePerStone[11] 
-//     	 << " |========================| " 
-//     	 << board[5] * valuePerStone[5] << " ]\n";
+    // Quan line
+    cout << "\t[ " << YELLOW << setw(2) << calcQuanValue(board[11]) << RESET;
+    cout << " |========================| " << YELLOW << setw(2) << calcQuanValue(board[5]) << RESET << " ]\n";
 
-	auto calcQuanValue = [](int count) {
-	    if (count == 0) return 0;
-	    return 10 + (count - 1); // 10 for Quan, rest are 1-point stones
-	};
-	
-	cout << "\t[ " << calcQuanValue(board[11]) 
-	     << " |=============================| " 
-	     << calcQuanValue(board[5]) << " ]\n";
-	
-
-    // Bottom row: index 0 to 4
+    // Player 1 (Bottom row)
     cout << "\t[    |";
     for (int i = 0; i <= 4; i++) {
-        cout << "  " << board[i] << "  |";
+        cout << " " << setw(2) << colorNumber(board[i], i == 11 || i == 5) << " |";
     }
-    cout << "    ]\n";
-    
-    cout << "\t[____|_____|_____|_____|_____|_____|____]\n";
-    cout << "\n";
-    cout << "\t     |  1  |  2  |  3  |  4  |  5  |     \n";
-    cout << "\n";
+    cout << "\t   ]\n";
 
-    // Show scores
-    cout << "Score - Player 1: " << score[0]
-         << " | Player 2: " << score[1] << "\n";
-    cout << "========================================\n";
+    cout << "\t" << "-----+------------------------+-----" << "\n";
+    cout << "\t    " << " |  1 |  2 |  3 |  4 |  5 | " << "\n";
+    cout << "\t    " << " +------------------------+ " << "\n";
+
+    // Score
+    cout << BOLD << "[Score]  Player 1: " << RED << BLINK << score[0] << RESET
+         << BOLD << " | Player 2: " << RED << BLINK << score[1] << RESET << endl;
+    cout << "===============================\n";
+//	cout << "\t     | 11  | 10  |  9  |  8  |  7  |     \n";
+//    cout << "\t ________________________________________\n";
+//	cout << "\t[    |     |     |     |     |     |    ]\n";
+//
+//    // Top row: index 10 to 6
+//    cout << "\t[    |";
+//    for (int i = 10; i >= 6; i--) {
+//        cout << "  " << setw(2) << board[i] << " |";
+//    }
+//    cout << "    ]\n";
+//
+//    // Quan row: pits 11 and 5 (both should be shown as value 10)
+////    cout << "\t[ " << board[11] * valuePerStone[11] 
+////     	 << " |========================| " 
+////     	 << board[5] * valuePerStone[5] << " ]\n";
+//
+//	auto calcQuanValue = [](int count) {
+//	    if (count == 0) return 0;
+//	    return 10 + (count - 1); // 10 for Quan, rest are 1-point stones
+//	};
+//	
+//	cout << "\t[ " << setw(2) << calcQuanValue(board[11]) 
+//	     << " |=============================| " 
+//	     << setw(2) << calcQuanValue(board[5]) << " ]\n";
+//	
+//
+//    // Bottom row: index 0 to 4
+//    cout << "\t[    |";
+//    for (int i = 0; i <= 4; i++) {
+//        cout << "  " << setw(2) << board[i] << " |";
+//    }
+//    cout << "    ]\n";
+//    
+//    cout << "\t[____|_____|_____|_____|_____|_____|____]\n";
+//    cout << "\n";
+//    cout << "\t     |  1  |  2  |  3  |  4  |  5  |     \n";
+//    cout << "\n";
+//
+//    // Show scores
+//    cout << "Score - Player 1: " << score[0]
+//         << " | Player 2: " << score[1] << "\n";
+//    cout << "========================================\n";
 }
 
 
@@ -133,7 +181,7 @@ bool makeMove(int startPit, int player, int direction) {
     }
     
     cout << "Player " << player << " picks up " << stonesToSow << " stones from pit " << startPit +1 
-		 << "in direction " << (direction == 1 ? "Right" : "Left") << "." << endl;
+		 << " in direction " << (direction == 1 ? "Right" : "Left") << "." << endl;
     board[currentPitIdx] = 0; // Pick up stones
     
     auto calculateNextIndex = [&](int currentIndex) {
@@ -271,6 +319,7 @@ void collectRemainStones() {
 }
 
 int main() {
+	// SetConsoleOutputCP(437);
 	int currentPlayer = 1;
 	
     while (true) {
