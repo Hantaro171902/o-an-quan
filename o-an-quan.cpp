@@ -147,7 +147,7 @@ int getValidMove(int player) {
                 cout << "Invalid pit number for Player 1. Try again." << endl;
             }
         } else { // Player 2
-            if (pitChoice >= 6 && pitChoice <= 10) {
+            if (pitChoice >= 6 && pitChoice <= 11) {
                 board_index = pitChoice - 1; 
                 // The board layout is P1: 0-4, P1 Quan: 5, P2: 6-10, P2 Quan: 11
                 // So player 2 input 6-10 corresponds to indices 6-10.
@@ -219,32 +219,32 @@ bool makeMove(int startPit, int player, int direction) {
 //		}
 	}
     
-    int pitToCheckForCapture = (currentPitIdx + 1) % 12;
-    int pitAfterCaptureCheck = (pitToCheckForCapture + 1) % 12;
-
-    if (pitToCheckForCapture != 5 && pitToCheckForCapture != 11 && board[pitToCheckForCapture] > 0 &&
-        board[pitAfterCaptureCheck] == 0)
-    {
-        int capturedStones = board[pitToCheckForCapture];
-      
-        // Basic Capture: Capture only the stones in 'pitToCheckForCapture'
-        cout << "Player " << player << " captures " << capturedStones << " stones from pit " << pitToCheckForCapture + 1 << " (followed by empty pit " << pitAfterCaptureCheck + 1 << ")" << endl;
-        score[player - 1] += capturedStones;
-        board[pitToCheckForCapture] = 0; // Remove captured stones
-
-    }
+//    int pitToCheckForCapture = (currentPitIdx + 1) % 12;
+//    int pitAfterCaptureCheck = (pitToCheckForCapture + 1) % 12;
+//
+//    if (pitToCheckForCapture != 5 && pitToCheckForCapture != 11 && board[pitToCheckForCapture] > 0 &&
+//        board[pitAfterCaptureCheck] == 0)
+//    {
+//        int capturedStones = board[pitToCheckForCapture];
+//      
+//        // Basic Capture: Capture only the stones in 'pitToCheckForCapture'
+//        cout << "Player " << player << " captures " << capturedStones << " stones from pit " << pitToCheckForCapture + 1 << " (followed by empty pit " << pitAfterCaptureCheck + 1 << ")" << endl;
+//        score[player] += capturedStones;
+//        board[pitToCheckForCapture] = 0; // Remove captured stones
+//
+//    }
 
     
-/*    // Check if landed in your own stone
-    if ((player == 1 && i == 5) || (player == 2 && i == 11)) {
-    	return true;	// Get another turn
-	}
+    // Check if landed in your own stone
+//    if ((player == 1 && i == 5) || (player == 2 && i == 11)) {
+//    	return true;	// Get another turn
+//	}
 
     // Capture rule
     bool isPlayer1 = (player == 1);
-    if (board[i] == 1) {
-        if ((isPlayer1 && i >= 0 && i <= 4) || (!isPlayer1 && i >= 6 && i <= 10)) {
-            int opposite = 11 - i;
+    if (board[currentPitIdx] == 1) {
+        if ((isPlayer1 && currentPitIdx >= 0 && currentPitIdx <= 4) || (!isPlayer1 && currentPitIdx >= 6 && currentPitIdx <= 10)) {
+            int opposite = 11 - currentPitIdx;
             if (board[opposite] > 0) {
                 // Determine score from opposite pit:
                 int stoneValue = (opposite == 5 || opposite == 11) ? 10 : 1;
@@ -254,14 +254,14 @@ bool makeMove(int startPit, int player, int direction) {
                 score[player - 1] += totalScore;
 
                 board[opposite] = 0;
-                board[i] = 0;
+                board[currentPitIdx] = 0;
 
                 cout << "Player " << player << " captures from pit " << opposite
                      << " for " << totalScore << " points!\n";
             }
         }
     }
-*/
+
     return false;	// No extra turn
 }
 
