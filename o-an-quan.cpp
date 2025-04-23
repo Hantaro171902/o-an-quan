@@ -2,6 +2,10 @@
 #include <vector>
 #include <numeric> // For std::accumulate if needed later
 #include <limits>
+#include <cctype>
+#include <iomanip>
+
+
 /*
 GAME RULE
 	 _____________________________
@@ -119,7 +123,7 @@ int getValidMove(int player) {
 }
 
 
-bool makeMove(int startPit, int player) {
+bool makeMove(int startPit, int player, int direction) {
 	int currentPitIdx = startPit;
     int stonesToSow = board[currentPitIdx];
     
@@ -128,8 +132,13 @@ bool makeMove(int startPit, int player) {
         return false; // Should not happen if getValidMove works correctly
     }
     
-    cout << "Player " << player << " picks up " << stonesToSow << " stones from pit " << startPit +1 << "." << endl;
+    cout << "Player " << player << " picks up " << stonesToSow << " stones from pit " << startPit +1 
+		 << "in direction " << (direction == 1 ? "Right" : "Left") << "." << endl;
     board[currentPitIdx] = 0; // Pick up stones
+    
+    auto calculateNextIndex = [&](int currentIndex) {
+    	return (currentIndex + direction + 12) % 12;
+	};
 
     while (stonesToSow > 0) {
         while (stonesToSow > 0) {
@@ -157,9 +166,9 @@ bool makeMove(int startPit, int player) {
             break;
         }
         
-        if ((player == 1 && currentPitIdx == 5) || (player == 2 && currentPitIdx == 11)) {
-        	cout << "Landed in own Quan pit " << currentPitIdx + 1 << ". Turn might continue based on specific rules (not implemented here), standard Mancala gives extra turn." << endl;
-		}
+//        if ((player == 1 && currentPitIdx == 5) || (player == 2 && currentPitIdx == 11)) {
+//        	cout << "Landed in own Quan pit " << currentPitIdx + 1 << ". Turn might continue based on specific rules (not implemented here), standard Mancala gives extra turn." << endl;
+//		}
 	}
     
     int pitToCheckForCapture = (currentPitIdx + 1) % 12;
@@ -305,9 +314,32 @@ int main() {
             continue; // Skip to next player's turn
         }
         
-        // --- Player's extra turn ---
-        int pitIndex = getValidMove(currentPlayer);
-        bool extraTurn = makeMove(pitIndex, currentPlayer); // makeMove now handles the continuation internally
+        int pitIndex = getValidMove(currentPlayer);	// Take place player's choice
+        
+        // --- Player's move direction ---
+        int direction;
+        char directionChoice;
+        while (true) {
+        	// printBoard(board, score)
+        	cout << "Choose direction to sow " << pitIndex + 1 << " (L: Left | R: Right): ";
+        	cin >> directionChoice;
+        	
+        	if (directionChoice == 'L') {
+        		direction = -1;
+        		break;
+			} else if (directionChoice == 'R') {
+				direction = 1;
+				break;
+			} else {
+				cout << "Invalid choice ! Please choose 'L' or 'R'. " << endl;
+				// clear cached when chose wrong
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			}
+		}        
+        
+        
+        bool extraTurn = makeMove(pitIndex, currentPlayer, direction); // makeMove now handles the continuation internally
 
 		if (!extraTurn) {
             
