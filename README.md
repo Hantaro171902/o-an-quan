@@ -1,9 +1,5 @@
 <h1 align="center"> Ô Ăn Quan 👨‍🌾👨‍⚖️ </h1>
 
-Ô ăn quan là một trò chơi dân gian Việt Nam
-
-![image](https://github.com/user-attachments/assets/2964073c-0104-4661-87b4-4f9c3930b044)
-
 
 <p align="center"><strong>Ô Ăn Quan</strong> là một biến thể của trò chơi <strong>Mancala</strong> được người Việt du nhập và phổ biển toàn cõi nước ta</p>
 
