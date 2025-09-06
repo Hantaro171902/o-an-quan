@@ -333,6 +333,6 @@ int main() {
         currentPlayer = (currentPlayer == 1) ? 2 : 1;
         cout << "\n----------------------------------------\n" << endl;
     }
-
     return 0;
 }
+
