@@ -16,7 +16,6 @@ const string GREEN   = "\033[32m";
 const string YELLOW  = "\033[33m";
 const string CYAN    = "\033[36m";
 
-// ANSI style codes
 const string BOLD    = "\033[1m";
 
 // NEW: A struct to represent the state of a single pit
@@ -64,7 +63,6 @@ void printBoard() {
         return value;
     };
 
-    // --- ASCII Art Title ---
     cout << YELLOW << R"(
        _______                       _______
       |       |    .---.-.-----.    |       |.--.--.---.-.-----.
@@ -148,7 +146,6 @@ int calculateCaptureScore(int pitIndex) {
     return scoreVal;
 }
 
-
 bool makeMove(int startPit, int player, int direction) {
     int stones = board[startPit].smallStones;
     board[startPit].smallStones = 0; // pick up
@@ -158,56 +155,66 @@ bool makeMove(int startPit, int player, int direction) {
          << " stones from pit " << startPit + 1 
          << " going " << (direction == 1 ? "Right" : "Left") << ".\n";
 
-    auto nextIndex = [&](int idx) {
-        return (idx + direction + 12) % 12;
-    };
+    auto nextIndex = [&](int idx) { return (idx + direction + 12) % 12; };
 
     // initial sow
     while (stones > 0) {
         currentPit = nextIndex(currentPit);
-        board[currentPit].smallStones++; // even Quan gets small stones when passed
+        board[currentPit].smallStones++; // sow: always add a small stone, even into Quan
         stones--;
     }
 
     cout << "--> Last stone landed in pit " << currentPit + 1 << ".\n";
 
-    // Now repeatedly resolve continuation / capture according to your rules
-    while (true) {
-        int nextPit = nextIndex(currentPit);
-        int afterNext = nextIndex(nextPit);
-
-        // --- Case 1: Next pit is Quan -> turn ends
-        if (nextPit == 5 || nextPit == 11) {
-            cout << "--> Next pit is a Quan. Turn ends.\n";
-            break;
-        }
-
-        // --- Case 2: Next two pits empty -> turn ends
-        // Note: afterNext may be a Quan; check hasMandarin to decide emptiness properly
-        if (board[nextPit].smallStones == 0 &&
-            board[afterNext].smallStones == 0 &&
-            !board[afterNext].hasMandarin) {
-            cout << "--> Next two pits are empty. Turn ends.\n";
-            break;
-        }
-
-        // --- Case 3: Capture (next pit empty but afterNext has something)
-        if (board[nextPit].smallStones == 0) {
-            if (board[afterNext].smallStones > 0 || board[afterNext].hasMandarin) {
-                int capturedScore = calculateCaptureScore(afterNext);
-                cout << GREEN << "--> Capture from pit " << afterNext + 1 
-                     << " worth " << capturedScore << " points!\n" << RESET;
-                score[player - 1] += capturedScore;
-                board[afterNext].smallStones = 0;
-                board[afterNext].hasMandarin = false;
-            } else {
-                // afterNext truly empty (should be covered above), but keep safe fallback
-                cout << "--> Nothing to capture. Turn ends.\n";
+        // --- add debug info right at loop start ---
+        while (true) {
+            int nextPit  = nextIndex(currentPit); // immediate next pit
+            int afterNext = nextIndex(nextPit);    // the pit after that
+    
+            // DEBUG: print current, next, afterNext and their small stones + hasMandarin
+            // cerr << "[DBG] current=" << currentPit+1
+            //      << " next=" << nextPit+1 << "(s=" << board[nextPit].smallStones
+            //      << ",m=" << board[nextPit].hasMandarin << ")"
+            //      << " afterNext=" << afterNext+1 << "(s=" << board[afterNext].smallStones
+            //      << ",m=" << board[afterNext].hasMandarin << ")\n";
+    
+            // CASE 1: if next pit is Quan -> turn ends (Quan is not removed by passing)
+            if (nextPit == 5 || nextPit == 11) {
+                cout << "--> Next pit is a Quan. Turn ends.\n";
+                break;
             }
-            break;
-        }
+    
+            // CASE 2: next two pits empty and afterNext has no mandarin -> turn ends
+            if (board[nextPit].smallStones == 0 &&
+                board[afterNext].smallStones == 0 &&
+                !board[afterNext].hasMandarin) 
+            {
+                cout << "--> Next two pits are empty. Turn ends.\n";
+                break;
+            }
+    
+            // CASE 3: capture: next pit empty but afterNext has pieces (or mandarin)
+            if (board[nextPit].smallStones == 0) {
+                if (board[afterNext].smallStones > 0 || board[afterNext].hasMandarin) {
+                    int capturedScore = calculateCaptureScore(afterNext);
+                    cout << GREEN << "--> Capture from pit " << afterNext + 1 
+                         << " worth " << capturedScore << " points!\n" << RESET;
+                    score[player - 1] += capturedScore;
+    
+                    // SAFEGUARD: only REMOVE mandarin if afterNext actually had a mandarin
+                    if (board[afterNext].hasMandarin) {
+                        cerr << "[DBG] Mandarin at pit " << afterNext + 1 << " is being captured and removed.\n";
+                        board[afterNext].hasMandarin = false;
+                    }
+                    board[afterNext].smallStones = 0;
+                } else {
+                    cout << "--> Nothing to capture. Turn ends.\n";
+                }
+                break;
+            }
+    
 
-        // --- Case 4: Continue sowing (Rải quân) — nextPit has small stones
+        // CASE 4: continue (rái quân) — the next pit has small stones, pick them up
         cout << "--> Continuing by picking up " << board[nextPit].smallStones 
              << " stones from pit " << nextPit + 1 << ".\n";
 
@@ -215,7 +222,7 @@ bool makeMove(int startPit, int player, int direction) {
         board[nextPit].smallStones = 0;
         currentPit = nextPit;
 
-        // sow the picked stones and loop back to re-evaluate
+        // sow the picked stones and loop back
         while (stones > 0) {
             currentPit = nextIndex(currentPit);
             board[currentPit].smallStones++;
@@ -223,13 +230,11 @@ bool makeMove(int startPit, int player, int direction) {
         }
 
         cout << "--> Last stone landed in pit " << currentPit + 1 << ".\n";
-
-        // loop continues and will re-check nextPit/afterNext based on updated currentPit
+        // now loop to re-evaluate nextPit/afterNext for this new currentPit
     }
 
-    return false; // keep same signature/behavior as before
+    return false;
 }
-
 
 bool isGameOver() {
     bool noMandarin = (!board[5].hasMandarin && !board[11].hasMandarin);
@@ -333,6 +338,6 @@ int main() {
         currentPlayer = (currentPlayer == 1) ? 2 : 1;
         cout << "\n----------------------------------------\n" << endl;
     }
+
     return 0;
 }
-
