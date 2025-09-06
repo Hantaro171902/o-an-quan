@@ -15,4 +15,3 @@ Người bắt đầu sẽ cầm lên toàn bộ quân trong ô vuông gần nh�
 - Nếu người chơi không có đủ số dân là 5 thì cần mượn của đối phương. Sau đó sẽ trả lại trừ đi khi tính điểm.
 - Vòng chơi được xem là đã kết thúc khi toàn bộ số dân và quan có trên bàn chơi đều đã bị ăn hết. Nếu ở 2 ô quan đã hết quân nhưng ở dân vẫn còn thì còn ở ô thuộc quyền kiểm soát của ai sẽ chia cho người đó. Ở ô quan có số dân ít hơn 5 thì được gọi là quan non. Một số luật có thể quy định không được ăn quan non để kéo dài thời gian chơi.
 
-## Creat a new branch with your name to colab
