@@ -1,444 +1,338 @@
 #include <iostream>
-#include <vector>
-#include <numeric> // For std::accumulate if needed later
-#include <limits>
-#include <cctype>
 #include <string>
-#include <iomanip>
-// #include <windows.h>
-
-/*
-GAME RULE
-	 _____________________________
-	[    |   |   |   |   |   |    ]
-	[    | 5 | 5 | 5 | 5 | 5 |    ] 
-	[ 10 |===================| 10 ]
-	[    | 5 | 5 | 5 | 5 | 5 |    ] 
-	[____|___|___|___|___|___|____]
-*/
+#include <vector>
+#include <iomanip> // For std::setw
+#include <sstream> // For std::stringstream
+#include <cctype>  // For std::toupper
+#include <limits>  // For std::numeric_limits
+#include <numeric> // For std::accumulate (if needed)
 
 using namespace std;
 
-const string RESET = "\033[0m";
-const string RED = "\033[31m";
-const string CYAN = "\033[36m";
-const string YELLOW = "\033[33m";
-const string BOLD = "\033[1m";
-const string BLINK = "\033[5m";
+// ANSI color codes for terminal output
+const string RESET   = "\033[0m";
+const string RED     = "\033[31m";
+const string GREEN   = "\033[32m";
+const string YELLOW  = "\033[33m";
+const string CYAN    = "\033[36m";
 
-int board[12] = {5, 5, 5, 5, 5, 1,
-				 5, 5, 5, 5, 5, 1};
-				 
-int valuePerStone[12] = {1, 1, 1, 1, 1, 10, 
-						 1, 1, 1, 1, 1, 10};
+// ANSI style codes
+const string BOLD    = "\033[1m";
 
-int score[2] = {0, 0}; 	// Player 1: score[0], Player 2: score[1]
+// NEW: A struct to represent the state of a single pit
+struct Pit {
+    int smallStones = 0;
+    bool hasMandarin = false;
+};
 
-void printBoard(int board[12], int score[2]) {
-	auto colorNumber = [](int val, bool isQuan) -> string {
-        string color = isQuan ? RED : CYAN;
-        return color + (val < 10 ? " " : "") + to_string(val) + RESET;
-    };
+// CHANGED: The board is now an array of Pit structs
+Pit board[12];
 
-    auto calcQuanValue = [](int count) {
-        if (count == 0) return 0;
-        return 10 + (count - 1); // 10 for Quan + extra
-    };
+int score[2] = {0, 0}; // Player 1: score[0], Player 2: score[1]
 
-    cout << "\t    " << " +------------------------+ " << "\n";
-    cout << "\t    " << " | 11 | 10 |  9 |  8 |  7 | " << "\n";
-    cout << "\t" << "-----+----+----+----+----+----+-----" << "\n";
-
-    // Player 2 (Top row)
-    cout << "\t[    |";
-    for (int i = 10; i >= 6; i--) {
-        cout << " " << setw(2) << colorNumber(board[i], i == 11 || i == 5) << " |";
+// NEW: Function to set up the board at the start of the game
+void initializeBoard() {
+    // Set up Player 1's small pits
+    for (int i = 0; i <= 4; ++i) {
+        board[i].smallStones = 5;
     }
-    cout << "\t   ]\n";
-
-    // Quan line
-    cout << "\t[ " << YELLOW << setw(2) << calcQuanValue(board[11]) << RESET;
-    cout << " |========================| " << YELLOW << setw(2) << calcQuanValue(board[5]) << RESET << " ]\n";
-
-    // Player 1 (Bottom row)
-    cout << "\t[    |";
-    for (int i = 0; i <= 4; i++) {
-        cout << " " << setw(2) << colorNumber(board[i], i == 11 || i == 5) << " |";
+    // Set up Player 2's small pits
+    for (int i = 6; i <= 10; ++i) {
+        board[i].smallStones = 5;
     }
-    cout << "\t   ]\n";
-
-    cout << "\t" << "-----+------------------------+-----" << "\n";
-    cout << "\t    " << " |  1 |  2 |  3 |  4 |  5 | " << "\n";
-    cout << "\t    " << " +------------------------+ " << "\n";
-
-    // Score
-    cout << BOLD << "[Score]  Player 1: " << RED << BLINK << score[0] << RESET
-         << BOLD << " | Player 2: " << RED << BLINK << score[1] << RESET << endl;
-    cout << "===============================\n";
-//	cout << "\t     | 11  | 10  |  9  |  8  |  7  |     \n";
-//    cout << "\t ________________________________________\n";
-//	cout << "\t[    |     |     |     |     |     |    ]\n";
-//
-//    // Top row: index 10 to 6
-//    cout << "\t[    |";
-//    for (int i = 10; i >= 6; i--) {
-//        cout << "  " << setw(2) << board[i] << " |";
-//    }
-//    cout << "    ]\n";
-//
-//    // Quan row: pits 11 and 5 (both should be shown as value 10)
-////    cout << "\t[ " << board[11] * valuePerStone[11] 
-////     	 << " |========================| " 
-////     	 << board[5] * valuePerStone[5] << " ]\n";
-//
-//	auto calcQuanValue = [](int count) {
-//	    if (count == 0) return 0;
-//	    return 10 + (count - 1); // 10 for Quan, rest are 1-point stones
-//	};
-//	
-//	cout << "\t[ " << setw(2) << calcQuanValue(board[11]) 
-//	     << " |=============================| " 
-//	     << setw(2) << calcQuanValue(board[5]) << " ]\n";
-//	
-//
-//    // Bottom row: index 0 to 4
-//    cout << "\t[    |";
-//    for (int i = 0; i <= 4; i++) {
-//        cout << "  " << setw(2) << board[i] << " |";
-//    }
-//    cout << "    ]\n";
-//    
-//    cout << "\t[____|_____|_____|_____|_____|_____|____]\n";
-//    cout << "\n";
-//    cout << "\t     |  1  |  2  |  3  |  4  |  5  |     \n";
-//    cout << "\n";
-//
-//    // Show scores
-//    cout << "Score - Player 1: " << score[0]
-//         << " | Player 2: " << score[1] << "\n";
-//    cout << "========================================\n";
+    // Place the Mandarin stones in the Quan pits
+    board[5].hasMandarin = true;
+    board[11].hasMandarin = true;
 }
 
+void printBoard() {
+    // Lambda to display the count of small stones in a pit
+    auto displaySmallStones = [](int count) -> string {
+        string color = (count > 0) ? CYAN : YELLOW;
+        stringstream ss;
+        ss << color << BOLD << setw(2) << count << RESET;
+        return ss.str();
+    };
 
+    // Lambda to calculate the total point value of a Quan pit
+    auto calcQuanValue = [](const Pit& quanPit) {
+        int value = 0;
+        if (quanPit.hasMandarin) {
+            value += 10;
+        }
+        value += quanPit.smallStones;
+        return value;
+    };
+
+    // --- ASCII Art Title ---
+    cout << YELLOW << R"(
+       _______                       _______
+      |       |    .---.-.-----.    |       |.--.--.---.-.-----.
+      |   -   |    |  _  |     |    |   -  _||  |  |  _  |     |
+      |_______|    |___._|__|__|    |_______||_____|___._|__|__|
+
+    )" << RESET << endl;
+
+    // --- Board Display ---
+    cout << "\t      +------------------------+" << endl;
+    cout << "\t  P2  | 11 | 10 |  9 |  8 |  7 |" << endl;
+    cout << "\t -----+------------------------+-----" << endl;
+
+    // Top row (P2): Shows the count of SMALL STONES
+    cout << "\t[    ]|";
+    for (int i = 10; i >= 6; i--) {
+        cout << " " << displaySmallStones(board[i].smallStones) << " |";
+    }
+    cout << "[ " << BOLD << displaySmallStones(board[5].smallStones) << " ]" << endl;
+
+    // Middle row: Shows the total calculated VALUE of Quan pits
+    cout << "\t[ " << YELLOW << BOLD << setw(2) << calcQuanValue(board[11]) << RESET;
+    cout << " ]|========================|[ "
+         << YELLOW << BOLD << setw(2) << calcQuanValue(board[5]) << RESET << " ]" << endl;
+
+    // Bottom row (P1): Shows the count of SMALL STONES
+    cout << "\t[ " << BOLD << displaySmallStones(board[11].smallStones) << " ]|";
+    for (int i = 0; i <= 4; i++) {
+        cout << " " << displaySmallStones(board[i].smallStones) << " |";
+    }
+    cout << "[    ]" << endl;
+
+    cout << "\t -----+------------------------+-----" << endl;
+    cout << "\t  P1  |  1 |  2 |  3 |  4 |  5 |" << endl;
+    cout << "\t      +------------------------+" << endl;
+    cout << endl;
+
+    // --- Score Display ---
+    cout << BOLD << "[Score] Player 1: " << GREEN << score[0] << RESET
+         << BOLD << " | Player 2: " << GREEN << score[1] << RESET << endl;
+    cout << "========================================" << endl;
+}
 
 int getValidMove(int player) {
-	int pitChoice;
-	int board_index;
-	while (true) {
-		cout << "Player " << player << ", choose a pit (" 
-     		 << (player == 1 ? "1-5" : "7-11") << "): ";
+    int pitChoice;
+    int board_index;
+    while (true) {
+        cout << BOLD << "Player " << player << ", choose a pit ("
+             << (player == 1 ? "1-5" : "7-11") << "): " << RESET;
 
-		cin >> pitChoice;
-		
-//		if (player == 1 && pit > 0 && pit <= 5 && board[pit] > 0) 
-//			return pit - 1;
-//		if (player == 2 && pit > 6 && pit <= 11 && board[pit] > 0) 
-//			return pit - 1;
+        cin >> pitChoice;
 
-		if (player == 1) {
-            if (pitChoice >= 1 && pitChoice <= 5) {
-                board_index = pitChoice - 1; // Convert 1-5 to 0-4
-                if (board[board_index] > 0) {
-                    return board_index;
-                } else {
-                    cout << "Invalid move: Pit " << pitChoice << " is empty. Try again." << endl;
-                }
-            } else {
-                cout << "Invalid pit number for Player 1. Try again." << endl;
-            }
-        } else { // Player 2
-            if (pitChoice >= 6 && pitChoice <= 11) {
-                board_index = pitChoice - 1; 
-                // The board layout is P1: 0-4, P1 Quan: 5, P2: 6-10, P2 Quan: 11
-                // So player 2 input 6-10 corresponds to indices 6-10.
-                if (board[board_index] > 0) {
-                    return board_index;
-                } else {
-                    cout << "Invalid move: Pit " << pitChoice << " is empty. Try again." << endl;
-                }
-            } else {
-                cout << "Invalid pit number for Player 2. Try again." << endl;
-            }
-        }
-			
-		// Clear input buffer if bad input occurred
         if (cin.fail()) {
-        	cin.clear();
+            cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid input type. Please enter a number." << endl;
+            cout << RED << "Invalid input. Please enter a number." << RESET << endl;
+            continue;
         }
-	}
+
+        int minPit = (player == 1) ? 1 : 7;
+        int maxPit = (player == 1) ? 5 : 11;
+
+        if (pitChoice >= minPit && pitChoice <= maxPit) {
+            board_index = pitChoice - 1; // Map 1-5 to 0-4 and 7-11 to 6-10
+            // CHANGED: A move is only valid if there are small stones to pick up
+            if (board[board_index].smallStones > 0) {
+                return board_index;
+            } else {
+                cout << YELLOW << "Invalid move: Pit " << pitChoice << " has no small stones. Try again." << RESET << endl;
+            }
+        } else {
+            cout << YELLOW << "Invalid pit number for Player " << player << ". Try again." << RESET << endl;
+        }
+    }
+}
+
+// Helper function to calculate the score value of a captured pit
+int calculateCaptureScore(int pitIndex) {
+    int scoreVal = board[pitIndex].smallStones;
+    if (board[pitIndex].hasMandarin) scoreVal += 10;
+    return scoreVal;
 }
 
 
 bool makeMove(int startPit, int player, int direction) {
-	int currentPitIdx = startPit;
-    int stonesToSow = board[currentPitIdx];
-    
-    if (stonesToSow == 0) {
-        cout << "Error: Tried to move from an empty pit." << endl;
-        return false; // Should not happen if getValidMove works correctly
+    int stones = board[startPit].smallStones;
+    board[startPit].smallStones = 0; // pick up
+    int currentPit = startPit;
+
+    cout << "Player " << player << " picks up " << stones 
+         << " stones from pit " << startPit + 1 
+         << " going " << (direction == 1 ? "Right" : "Left") << ".\n";
+
+    auto nextIndex = [&](int idx) {
+        return (idx + direction + 12) % 12;
+    };
+
+    // initial sow
+    while (stones > 0) {
+        currentPit = nextIndex(currentPit);
+        board[currentPit].smallStones++; // even Quan gets small stones when passed
+        stones--;
     }
-    
-    cout << "Player " << player << " picks up " << stonesToSow << " stones from pit " << startPit +1 
-		 << " in direction " << (direction == 1 ? "Right" : "Left") << "." << endl;
-    board[currentPitIdx] = 0; // Pick up stones
-    
-    auto calculateNextIndex = [&](int currentIndex) {
-    	return (currentIndex + direction + 12) % 12;
-	};
 
-    while (stonesToSow > 0) {
-        while (stonesToSow > 0) {
-            currentPitIdx = (currentPitIdx + 1) % 12; // Move to the next pit
+    cout << "--> Last stone landed in pit " << currentPit + 1 << ".\n";
 
-            // Skip opponent's Quan
-            if ((player == 1 && currentPitIdx == 11) || (player == 2 && currentPitIdx == 5)) {
-                
-                continue; // Skip sowing in opponent's Quan
-            }
+    // Now repeatedly resolve continuation / capture according to your rules
+    while (true) {
+        int nextPit = nextIndex(currentPit);
+        int afterNext = nextIndex(nextPit);
 
-            board[currentPitIdx]++;
-            stonesToSow--;
-            // cout << "Sowed 1 stone in pit " << currentPitIdx + 1 << ". Remaining: " << stonesToSow << endl; 
-        }
-        
-        int nextPitIndex = (currentPitIdx + 1) % 12;
-        
-        if (nextPitIndex != 5 && nextPitIndex != 11 && board[nextPitIndex] > 0) {
-            cout << "--> Next pit (" << nextPitIndex + 1 << ") has " << board[nextPitIndex] << " stones. Picking them up to continue!" << endl;
-            stonesToSow = board[nextPitIndex]; // Get stones for the next round of sowing
-            board[nextPitIndex] = 0;          // Empty the pit
-            currentPitIdx = nextPitIndex;   // Start sowing from the pit after this one
-        } else {
+        // --- Case 1: Next pit is Quan -> turn ends
+        if (nextPit == 5 || nextPit == 11) {
+            cout << "--> Next pit is a Quan. Turn ends.\n";
             break;
         }
-        
-//        if ((player == 1 && currentPitIdx == 5) || (player == 2 && currentPitIdx == 11)) {
-//        	cout << "Landed in own Quan pit " << currentPitIdx + 1 << ". Turn might continue based on specific rules (not implemented here), standard Mancala gives extra turn." << endl;
-//		}
-	}
-    
-//    int pitToCheckForCapture = (currentPitIdx + 1) % 12;
-//    int pitAfterCaptureCheck = (pitToCheckForCapture + 1) % 12;
-//
-//    if (pitToCheckForCapture != 5 && pitToCheckForCapture != 11 && board[pitToCheckForCapture] > 0 &&
-//        board[pitAfterCaptureCheck] == 0)
-//    {
-//        int capturedStones = board[pitToCheckForCapture];
-//      
-//        // Basic Capture: Capture only the stones in 'pitToCheckForCapture'
-//        cout << "Player " << player << " captures " << capturedStones << " stones from pit " << pitToCheckForCapture + 1 << " (followed by empty pit " << pitAfterCaptureCheck + 1 << ")" << endl;
-//        score[player] += capturedStones;
-//        board[pitToCheckForCapture] = 0; // Remove captured stones
-//
-//    }
 
-    
-    // Check if landed in your own stone
-//    if ((player == 1 && i == 5) || (player == 2 && i == 11)) {
-//    	return true;	// Get another turn
-//	}
-
-    // Capture rule
-    bool isPlayer1 = (player == 1);
-    if (board[currentPitIdx] == 1) {
-        if ((isPlayer1 && currentPitIdx >= 0 && currentPitIdx <= 4) || (!isPlayer1 && currentPitIdx >= 6 && currentPitIdx <= 10)) {
-            int opposite = 11 - currentPitIdx;
-            if (board[opposite] > 0) {
-                // Determine score from opposite pit:
-                int stoneValue = (opposite == 5 || opposite == 11) ? 10 : 1;
-                int capturedStones = board[opposite];
-                int totalScore = (capturedStones + 1) * stoneValue; // +1 for current pit
-
-                score[player - 1] += totalScore;
-
-                board[opposite] = 0;
-                board[currentPitIdx] = 0;
-
-                cout << "Player " << player << " captures from pit " << opposite
-                     << " for " << totalScore << " points!\n";
-            }
+        // --- Case 2: Next two pits empty -> turn ends
+        // Note: afterNext may be a Quan; check hasMandarin to decide emptiness properly
+        if (board[nextPit].smallStones == 0 &&
+            board[afterNext].smallStones == 0 &&
+            !board[afterNext].hasMandarin) {
+            cout << "--> Next two pits are empty. Turn ends.\n";
+            break;
         }
+
+        // --- Case 3: Capture (next pit empty but afterNext has something)
+        if (board[nextPit].smallStones == 0) {
+            if (board[afterNext].smallStones > 0 || board[afterNext].hasMandarin) {
+                int capturedScore = calculateCaptureScore(afterNext);
+                cout << GREEN << "--> Capture from pit " << afterNext + 1 
+                     << " worth " << capturedScore << " points!\n" << RESET;
+                score[player - 1] += capturedScore;
+                board[afterNext].smallStones = 0;
+                board[afterNext].hasMandarin = false;
+            } else {
+                // afterNext truly empty (should be covered above), but keep safe fallback
+                cout << "--> Nothing to capture. Turn ends.\n";
+            }
+            break;
+        }
+
+        // --- Case 4: Continue sowing (Rải quân) — nextPit has small stones
+        cout << "--> Continuing by picking up " << board[nextPit].smallStones 
+             << " stones from pit " << nextPit + 1 << ".\n";
+
+        stones = board[nextPit].smallStones;
+        board[nextPit].smallStones = 0;
+        currentPit = nextPit;
+
+        // sow the picked stones and loop back to re-evaluate
+        while (stones > 0) {
+            currentPit = nextIndex(currentPit);
+            board[currentPit].smallStones++;
+            stones--;
+        }
+
+        cout << "--> Last stone landed in pit " << currentPit + 1 << ".\n";
+
+        // loop continues and will re-check nextPit/afterNext based on updated currentPit
     }
 
-    return false;	// No extra turn
+    return false; // keep same signature/behavior as before
 }
+
 
 bool isGameOver() {
-    bool player1Empty = true;
-    bool player2Empty = true;
+    bool noMandarin = (!board[5].hasMandarin && !board[11].hasMandarin);
 
-	if (board[5] == 0 && board[11] == 0) {
-        cout << "Game Over: Both Quan pits are empty." << endl;
-        return true;
+    bool noStones = true;
+    for (int i = 0; i < 12; i++) {
+        if (board[i].smallStones > 0) {
+            noStones = false;
+            break;
+        }
     }
-    
-    // Another end condition: All *small* pits are empty (stones are only in Quans)
-    bool allSmallPitsEmpty = true;
-    for(int i=0; i<=4; ++i) if(board[i] != 0) allSmallPitsEmpty = false;
-    for(int i=6; i<=10; ++i) if(board[i] != 0) allSmallPitsEmpty = false;
-
-    if (allSmallPitsEmpty) {
-        cout << "Game Over: All small pits are empty." << endl;
-        return true;
-    }
-
-//    for (int i = 0; i <= 4; ++i) {
-//        if (board[i] != 0) player1Empty = false;
-//    }
-//    for (int i = 6; i <= 10; ++i) {
-//        if (board[i] != 0) player2Empty = false;
-//    }
-//
-//    return player1Empty || player2Empty;
-	return false;
+    return noMandarin || noStones;
 }
 
+
 void collectRemainStones() {
-	cout << "Collecting remaining small pit stones..." << endl;
-    int p1_collected = 0;
-    int p2_collected = 0;
-	
-	// Player 1's remaining small pit stones go to Player 1
-    for (int i = 0; i <= 4; ++i) {
-        score[0] += board[i];
-        board[i] = 0;
+    cout << "Collecting remaining small stones..." << endl;
+    // At the end of the game, any remaining small stones on the board are forfeited.
+    // In many rule variants, they are not added to any player's score.
+    // If you want to add them to the player on whose side they are, you can add that logic here.
+    // For now, we just clear them.
+    for(int i = 0; i < 12; ++i) {
+        board[i].smallStones = 0;
     }
-    if (p1_collected > 0) cout << "Player 1 collects " << p1_collected << " remaining stones." << endl;
-    score[0] += p1_collected;
-    
-    
-    // Player 2's remaining small pit stones go to Player 2
-    for (int i = 6; i <= 10; ++i) {
-        p2_collected += board[i];
-        board[i] = 0;
-    }
-    if (p2_collected > 0) cout << "Player 2 collects " << p2_collected << " remaining stones." << endl;
-    score[1] += p2_collected;
+    cout << "All remaining small stones have been cleared from the board." << endl;
 }
 
 int main() {
-	// SetConsoleOutputCP(437);
-	int currentPlayer = 1;
-	
-    while (true) {
-        printBoard(board, score);
-        
-        if (isGameOver()) {
-            cout << "Game over!\n";
-            collectRemainStones(); // Collect small pit stones
-           
-            cout << "Final Board State (before calculating winner):" << endl;
-            printBoard(board, score);
+    initializeBoard(); // NEW: Call the function to set up the board
+    int currentPlayer = 1;
 
-            // Determine winner based on final score
-            cout << "Final Score -> Player 1: " << score[0] << " | Player 2: " << score[1] << endl;
+    while (true) {
+        printBoard();
+
+        if (isGameOver()) {
+            cout << BOLD << "Game Over!" << RESET << endl;
+            collectRemainStones();
+
+            cout << "\nFinal Board State:" << endl;
+            printBoard();
+
+            cout << BOLD << "Final Score -> Player 1: " << score[0] << " | Player 2: " << score[1] << RESET << endl;
             if (score[0] > score[1]) {
-                cout << "Player 1 wins!\n";
+                cout << BOLD << GREEN << "Player 1 wins!" << RESET << endl;
             } else if (score[1] > score[0]) {
-                cout << "Player 2 wins!\n";
+                cout << BOLD << GREEN << "Player 2 wins!" << RESET << endl;
             } else {
-                cout << "It's a tie!\n";
+                cout << BOLD << YELLOW << "It's a tie!" << RESET << endl;
             }
-            break; // Exit game loop
+            break;
         }
-        
-        // Check if current player has any valid moves
+
         bool canMove = false;
-        int startPit = (currentPlayer == 1) ? 0 : 6;
-        int endPit = (currentPlayer == 1) ? 4 : 10;
-        for (int i = startPit; i <= endPit; ++i) {
-            if (board[i] > 0) {
+        int startRange = (currentPlayer == 1) ? 0 : 6;
+        int endRange = (currentPlayer == 1) ? 4 : 10;
+        for (int i = startRange; i <= endRange; i++) {
+            // CHANGED: Check for smallStones to see if a move is possible
+            if (board[i].smallStones > 0) {
                 canMove = true;
                 break;
             }
         }
 
         if (!canMove) {
-            cout << "Player " << currentPlayer << " has no valid moves! Skipping turn." << endl;
-             // In O An Quan, if a player has no stones, they might borrow points/stones - complex rule.
-             // Simple approach: skip turn. If both have no moves -> game over (covered by isGameOver).
+            cout << YELLOW << "Player " << currentPlayer << " has no valid moves! Forfeiting remaining stones." << RESET << endl;
+            // A player with no moves must "feed" their stones to the other player
+            int forfeitedStones = 0;
+            for(int i = startRange; i <= endRange; ++i) {
+                forfeitedStones += board[i].smallStones;
+                board[i].smallStones = 0;
+            }
+            if (forfeitedStones > 0) {
+                score[((currentPlayer % 2))] += forfeitedStones;
+                cout << "Player " << ((currentPlayer % 2) + 1) << " receives " << forfeitedStones << " forfeited stones." << endl;
+            }
             currentPlayer = (currentPlayer == 1) ? 2 : 1;
-            continue; // Skip to next player's turn
+            continue;
         }
+
+        int pitIdx = getValidMove(currentPlayer);
         
-        int pitIndex = getValidMove(currentPlayer);	// Take place player's choice
-        
-        // --- Player's move direction ---
         int direction;
         char directionChoice;
         while (true) {
-        	// printBoard(board, score)
-        	cout << "Choose direction to sow " << pitIndex + 1 << " (L: Left | R: Right): ";
-        	cin >> directionChoice;
-        	
-        	if (directionChoice == 'L') {
-        		direction = -1;
-        		break;
-			} else if (directionChoice == 'R') {
-				direction = 1;
-				break;
-			} else {
-				cout << "Invalid choice ! Please choose 'L' or 'R'. " << endl;
-				// clear cached when chose wrong
-				cin.clear();
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			}
-		}        
-        
-        
-        bool extraTurn = makeMove(pitIndex, currentPlayer, direction); // makeMove now handles the continuation internally
+            cout << BOLD << "Choose direction from pit " << pitIdx + 1 << " (L: Left | R: Right): " << RESET;
+            cin >> directionChoice;
+            directionChoice = toupper(directionChoice);
 
-		if (!extraTurn) {
-            
-             currentPlayer = (currentPlayer == 1) ? 2 : 1; // Switch player
-        } else {
-            cout << "Player " << currentPlayer << " gets another turn!" << endl;
-            // Keep currentPlayer the same
-        }
-     
-/*        switch (currentPlayer) {
-		    case 1: {
-		        int pit = getValidMove(1);
-		        bool extraTurn = makeMove(pit, 1);
-		
-		        if (!extraTurn) {
-		            currentPlayer = 2; // ? Switch to Player 2
-		        } else {
-		            cout << "Player 1 gets another turn!" << endl;
-		        }
-		        break;
-		    }
-		    case 2: {
-		        int pit = getValidMove(2);
-		        bool extraTurn = makeMove(pit, 2);
-		
-		        if (!extraTurn) {
-		            currentPlayer = 1; // ? Switch to Player 1
-		        } else {
-		            cout << "Player 2 gets another turn!" << endl;
-		        }
-		        break;
-		    }
-		}
-        
-        if (isGameOver()) {
-            cout << "Game over!\n";
-            collectRemainStones();
-            printBoard(board, score);
-            if (score[0] > score[1]) {
-                cout << "Player 1 wins!\n";
-            } else if (score[1] > score[0]) {
-                cout << "Player 2 wins!\n";
+            if (directionChoice == 'L' || directionChoice == 'R') {
+                direction = (directionChoice == 'R') ? 1 : -1;
+                break;
             } else {
-                cout << "It's a tie!\n";
+                cout << RED << "Invalid choice! Please choose 'L' or 'R'." << RESET << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
-            break;
         }
-    }
-*/	
-	}
 
-	return 0;
+        makeMove(pitIdx, currentPlayer, direction);
+        
+        currentPlayer = (currentPlayer == 1) ? 2 : 1;
+        cout << "\n----------------------------------------\n" << endl;
+    }
+    return 0;
 }
+
