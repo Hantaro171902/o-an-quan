@@ -72,7 +72,7 @@ Terminal with ANSI color support (Linux, macOS, or Windows Terminal)
 - ANSI color codes for highlights and captures
 - Turn-based two-player mode in the terminal
 
-# 📌 Fuuture update
+# 📌 Future update
 
 - Add AI opponent for single-player mode
 - Implement save/load game feature
