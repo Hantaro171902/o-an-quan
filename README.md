@@ -1,17 +1,124 @@
 <h1 align="center"> Ô Ăn Quan 👨‍🌾👨‍⚖️ </h1>
 
-<p align="center"><strong>Ô Ăn Quan</strong> là một biến thể của trò chơi <strong>Mancala</strong> được người Việt du nhập và phổ biển toàn cõi nước ta</p>
+## 🎮 Rules of the Game
 
-# Cách chơi
+Ô Ăn Quan is a strategic sowing-and-capturing game played on a board with 12 pits:
 
-Người bắt đầu sẽ cầm lên toàn bộ quân trong ô vuông gần nhất trong số 5 ô vuông thuộc quyền quản lý của mình. Sau đó lần lượt rải chúng vào các ô vuông khác bên cạnh mỗi ô 1 viên. Có thể chọn rải xuôi hoặc ngược chiều kim đồng hồ. Khi rải xong, một số tình huống sẽ phát sinh:
+- 10 small pits (called `dân`, or “`people`”) divided evenly between the two players.
+- 2 big pits (called `quan`, or “`mandarins`”) located at each end of the board.
 
-- Trường hợp liền kề sau ô cuối cùng vừa rải là một ô vuông có quân. Người chơi sử dụng tiếp các số quân ở ô đó và rải tiếp theo chiều như trên.
-- Nếu ô liền kề sau đó là một ô trống sau đó đến một ô có chứa quân. Không phân biệt ô ăn quan hay dân thì bạn sẽ bị mất lượt đối với số quân trong ô đó. Số quân đó sẽ được loại ra khỏi bàn chơi để khi kết thúc dùng để tính điểm.
-- Nếu liền kề sau ô vừa bị mất lượt lặp lại là một ô trống rồi đến ô có quân thì người chơi sẽ được ăn số quân ở ô đó. Người chơi hoàn toàn có thể tính toán để ăn hết số quân chỉ trong một lượt chơi.
-- Nếu một ô được gọi là ô nhà giàu tức là ô đó chứa rất nhiều dân. Người chơi hoàn toàn có thể tính toán để tích nhiều quân vào 1 ô. Sau đó ăn hết 1 lần để tích điểm.
-- Nếu ô liền tiếp phía sau là 2 ô trống hoặc ô ăn quan có chứa quân ngay sau khi vừa ăn ở ô trước thì người chơi mất lượt.
-- Nếu đến lượt chơi nhưng tất cả ô vuông thuộc quyền kiểm soát đều trống. Lúc này người chơi sẽ phải dùng đến 5 quân dân vừa ăn được. Sau đó rải đều vào 5 ô vuông để tiếp tục di chuyển.
-- Nếu người chơi không có đủ số dân là 5 thì cần mượn của đối phương. Sau đó sẽ trả lại trừ đi khi tính điểm.
-- Vòng chơi được xem là đã kết thúc khi toàn bộ số dân và quan có trên bàn chơi đều đã bị ăn hết. Nếu ở 2 ô quan đã hết quân nhưng ở dân vẫn còn thì còn ở ô thuộc quyền kiểm soát của ai sẽ chia cho người đó. Ở ô quan có số dân ít hơn 5 thì được gọi là quan non. Một số luật có thể quy định không được ăn quan non để kéo dài thời gian chơi.
+Each small pit starts with `5 stones`, and each quan starts with `10 stones`.
+
+---
+
+## 📜 Gameplay
+
+1. Starting a Turn - The player picks up all stones from one of their 5 small pits and sows them `clockwise` or `counterclockwise`.
+
+2. Continuation Rule - If the last stone lands in a pit with stones, pick them up and keep `sowing`.
+
+3. Capture Rule - If the next pit is empty and the following pit has stones, `capture` them.
+
+4. Rich Pit Strategy - Players can stockpile stones in one pit and capture them later.
+
+5. Turn Ends - If the `next two pits` are empty, or if the next pit is a quan.
+
+6. Borrowing Stones - If all 5 pits on a player’s side are empty, they must pay 5 stones (from their captured pile) to refill.
+
+7. End of the Game - The game ends when `all stones are captured`. Remaining stones in a player’s row belong to that player.
+
+---
+
+## ⚙️ How to Build & Run
+
+This project is written in `C++` and designed for the `terminal`.
+It uses ASCII art for the board and ANSI escape codes for colors and effects.
+
+## 🔧 Build Instructions
+
+```c++
+# Clone the repository
+git clone https://github.com/Hantaro171902/o-an-quan.git
+cd o-an-quan
+mkdir build && cd build
+cmake ..
+make 
+# Run the game
+./O-an-quan
+
+```
+
+On Windows:
+```c++
+g++ -std=c++17 -O2 -o oanquan.exe main.cpp
+.\oanquan.exe
+```
+---
+
+## ✅ Requirements
+
+C++17 or later
+
+Terminal with ANSI color support (Linux, macOS, or Windows Terminal)
+
+## 📸 Preview
+
+![alt text](assets/image.png)
+
+## ✨ Features
+
+- Vietnamese traditional game logic
+- `ASCII` art rendering of the board
+- ANSI color codes for highlights and captures
+- Turn-based two-player mode in the terminal
+
+# 📌 Fuuture update
+
+- Add AI opponent for single-player mode
+- Implement save/load game feature
+- Add sound effects (beeps for captures, etc.)
+- Improve ASCII board design with animations
+- Add configurable rules (e.g., allow/disallow quan non capture)
+- Online multiplayer mode (via sockets or simple server)
+- Packaging & cross-platform build scripts
+
+# 🤝 Contributing
+
+Contributions are welcome! Here’s how you can help:
+
+1. Fork the repository
+2. Create a new branch for your feature/fix:
+
+```
+git checkout -b feature/awesome-feature
+```
+
+3. Commit your changes:
+```
+git commit -m "Add awesome feature"
+```
+
+4. Push to your branch:
+```
+git push origin feature/awesome-feature
+```
+
+5. Open a Pull Request 🎉
+
+# 📜 License
+
+This project is licensed under the MIT License - you are free to use, modify, and share it with attribution.
+
+---
+
+# 💖 Support
+
+If you enjoy this project and want to support its development:
+
+- ⭐ Star this repo to show your love
+- ☕ Buy me a coffee
+- 💌 Share the project with friends who love Vietnamese games
+- 🐦 Follow me on LinkedIn
+
+Your support keeps me motivated to build more fun `C++ terminal games with ASCII art` 🚀
 
