@@ -1,0 +1,25 @@
+name: Prevent EXE Pushes
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  check-for-exe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check for .exe files
+        run: |
+          files=$(git diff --name-only --diff-filter=A HEAD~1 HEAD | grep '\.exe$')
+          if [ -n "$files" ]; then
+            echo "Error: Committing .exe files is not allowed."
+            echo "Files found:"
+            echo "$files"
+            exit 1
+          fi
